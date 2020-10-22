@@ -13,7 +13,7 @@
   {% for eml in meta.values() %}
     <tr>
       <td>{{ eml.stamp }}</td>
-      <td><a href="{{ url_for('show_email', gmid=eml.gmid) }}">{{ eml.subject }}</a></td>
+      <td><a href="{{ url_for('show_email', gmid=eml.gmid) }}">{{ (eml.subject or '')[:50] }}</a></td>
       <td>{{ eml.from }}</td>
       <td>{{ eml.labels }}</td>
     </tr>

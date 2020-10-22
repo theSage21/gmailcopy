@@ -1,19 +1,19 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1>{{ eml['subject'] }}</h1>
-<b>{{ eml['from'] }}</b>
 <hr>
 <table>
   <tbody>
+    <tr><td><b>Subject</b></td><td> {{ eml['subject'] }} </td></tr>
+    <tr><td><b>From</b></td><td> {{ eml['from'] }} </td></tr>
     {% for part in eml.walk() %}
     <tr>
-      <td>{{ loop.index }}</td>
+      <td><b>part-{{ loop.index }}</b></td>
       <td>
         <a href="{{ url_for('show_email', gmid=gmid, idx=(loop.index -1)) }}">
         {{ part.get_content_type() }}
         </a>
       </td>
-      <td>{{ part.get_filename() }}</td>
+      <td>{{ part.get_filename() or '' }}</td>
     </tr>
     {% endfor %}
   </tbody>
