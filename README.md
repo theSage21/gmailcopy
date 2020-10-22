@@ -17,5 +17,12 @@ I have this running on my raspberry pi using Docker.
 
 ```
 docker build -t gmailcopy .
-docker run --user "$(id -u):$(id -g)" --detach -v $PWD:/src --restart always python -m gmailcopy --email <your-email>@gmail.com --pwd <gmail app password> --seconds 3600
+docker run --user "$(id -u):$(id -g)" --detach -v $PWD:/src --restart always gmailcopy python -m gmailcopy.core --email <your-email>@gmail.com --pwd <gmail app password> --seconds 3600
+```
+
+## To view your emails
+
+
+```
+docker run -v $PWD:/src -p 5000:5000 gmailcopy python -m gmailcopy.server
 ```

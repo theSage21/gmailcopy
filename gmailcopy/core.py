@@ -14,19 +14,7 @@ import click
 import logging
 from tqdm import tqdm
 import json
-import sqlite3
-
-
-def convert_arrowdatetime(s):
-    return arrow.get(s)
-
-
-def adapt_arrowdatetime(adt):
-    return adt.isoformat()
-
-
-sqlite3.register_adapter(arrow.arrow.Arrow, adapt_arrowdatetime)
-sqlite3.register_converter("timestamp", convert_arrowdatetime)
+from gmailcopy.config import sqlite3
 
 
 @click.command()
@@ -130,3 +118,7 @@ def ensure_tables(conn):
     """
     )
     conn.commit()
+
+
+if __name__ == "__main__":
+    run()

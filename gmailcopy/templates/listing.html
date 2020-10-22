@@ -1,3 +1,23 @@
 {% extends 'base.html' %}
 {% block content %}
+<table>
+  <thead>
+    <tr>
+      <td>Datetime</td>
+      <td>Subject</td>
+      <td>From</td>
+      <td>Labels</td>
+    </tr>
+  </thead>
+  <tbody>
+  {% for eml in meta.values() %}
+    <tr>
+      <td>{{ eml.stamp }}</td>
+      <td><a href="{{ url_for('show_email', gmid=eml.gmid) }}">{{ eml.subject }}</a></td>
+      <td>{{ eml.from }}</td>
+      <td>{{ eml.labels }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
 {% endblock %}

@@ -1,3 +1,8 @@
-from . import core
+print(
+    """
+Please use one of the following:
 
-core.run()
+python -m gmailcopy.core
+python -m gmailcopy.server
+"""
+)

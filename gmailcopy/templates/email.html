@@ -2,5 +2,27 @@
 {% block content %}
 <h1>{{ eml['subject'] }}</h1>
 <b>{{ eml['from'] }}</b>
+<hr>
+<table>
+  <tbody>
+    {% for part in eml.walk() %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td>
+        <a href="{{ url_for('show_email', gmid=gmid, idx=(loop.index -1)) }}">
+        {{ part.get_content_type() }}
+        </a>
+      </td>
+      <td>{{ part.get_filename() }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<hr>
+{% if body.get_content_type() == 'text/plain' %}
+  <pre> {{ body }} </pre>
+{% else %}
+   {{ body|safe }} 
+{% endif %}
 {% endblock %}
 
