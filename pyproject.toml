@@ -8,6 +8,9 @@ authors = ["arjoonn sharma <arjoonn.94@gmail.com>"]
 python = "^3.8"
 tqdm = "^4.50.2"
 click = "^7.1.2"
+flask = "^1.1.2"
+Jinja2 = "^2.11.2"
+arrow = "^0.17.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
