@@ -18,7 +18,7 @@ import json
 @click.option("--email")
 @click.option("--pwd")
 @click.option("--backup_dir", default="backup")
-@click.option("--seconds", default=60 * 60)
+@click.option("--seconds", default=0)
 def run(email, pwd, backup_dir, seconds):
     while True:
         print("Checking", datetime.datetime.now())
@@ -27,6 +27,8 @@ def run(email, pwd, backup_dir, seconds):
         except Exception as e:
             logging.exception(e)
         except KeyboardInterrupt:
+            break
+        if seconds == 0:
             break
         print("Sleeping", seconds)
         time.sleep(seconds)
