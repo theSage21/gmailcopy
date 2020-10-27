@@ -67,37 +67,44 @@ def check_mail(email, pwd, backup_dir, conn):
 
 
 def parse_labels(string):
-    labels = string.split()
-    return labels
+    return string
 
 
 def backup_email(msgid, imap, backup_dir, conn):
     res, msg = imap.fetch(msgid, "(X-GM-MSGID)")
     gm_msgid = msg[0].decode().split()[-1].rstrip(")")
-    if os.path.exists(f"{backup_dir}/{gm_msgid}.eml"):
-        return
     res, msg = imap.fetch(msgid, "(X-GM-LABELS)")
     labels = parse_labels(msg[0].decode().rstrip(")").split("(X-GM-LABELS (")[1])
-    res, msg = imap.fetch(msgid, "(RFC822)")
     msgpath = os.path.join(backup_dir, f"{gm_msgid}.eml")
-    try:
-        with open(msgpath, "wb") as fl:
-            fl.write(msg[0][1])
-        update_meta(gm_msgid, email.message_from_bytes(msg[0][1]), labels, conn)
-    except KeyboardInterrupt:
-        shutil.rmtree(msgdir)
-        raise
+    if not os.path.exists(msgpath):
+        res, msg = imap.fetch(msgid, "(RFC822)")
+        try:
+            with open(msgpath, "wb") as fl:
+                fl.write(msg[0][1])
+        except KeyboardInterrupt:
+            shutil.rmtree(msgdir)
+            raise
+        data = msg[0][1]
+    else:
+        with open(msgpath, "rb") as fl:
+            data = fl.read()
+    update_meta(gm_msgid, email.message_from_bytes(data), labels, conn)
 
 
 def update_meta(gmid, eml, labels, conn):
-    sql = "insert into email values (?, ?, ?, ?, ?);"
-    args = (
-        gmid,
-        eml["subject"],
-        eml["From"],
-        " ".join(labels),
-        arrow.get(time.mktime(email.utils.parsedate(eml["Date"]))),
-    )
+    stamp = arrow.get(time.mktime(email.utils.parsedate(eml["Date"])))
+    labels = f" {labels} "
+    sql = """
+    insert into email values (?, ?, ?, ?, ?)
+    on conflict(gmid)
+    do update set
+        subject=?,
+        labels=?,
+        sender=?,
+        stamp=?;
+    """
+    args = [gmid, eml["subject"], eml["From"], labels, stamp]
+    args = args + args[1:]
     cursor = conn.cursor()
     cursor.execute(sql, args)
     conn.commit()
