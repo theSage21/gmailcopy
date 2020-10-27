@@ -2,7 +2,7 @@ import os
 import io
 import click
 import email
-from flask import Flask, render_template, url_for, request, send_file
+from flask import Flask, render_template, url_for, request, send_file, redirect
 from collections import namedtuple
 from gmailcopy.config import sqlite3
 
@@ -14,21 +14,25 @@ def run(backup_dir):
     app.jinja_env.globals["url_for"] = url_for
     Meta = namedtuple("Meta", "gmid subject sender labels stamp")
 
-    dbpath = f"{backup_dir}/meta.db"
-    conn = sqlite3.connect(dbpath)
-    cursor = conn.cursor()
-    cursor.execute("pragma query_only=1;")
     meta = {}
-    for row in cursor.execute(
-        "select * from email order by datetime(stamp) desc"
-    ).fetchall():
-        meta[row[0]] = Meta(*tuple(row))
-    conn.commit()
-    conn.close()
 
     @app.route("/")
     def listing():
         return render_template("listing.html", meta=meta)
+
+    @app.route("/refresh")
+    def refresh_meta():
+        dbpath = f"{backup_dir}/meta.db"
+        conn = sqlite3.connect(dbpath)
+        cursor = conn.cursor()
+        cursor.execute("pragma query_only=1;")
+        for row in cursor.execute(
+            "select * from email order by datetime(stamp) desc"
+        ).fetchall():
+            meta[row[0]] = Meta(*tuple(row))
+        conn.commit()
+        conn.close()
+        return redirect(url_for("listing"))
 
     @app.route("/<gmid>")
     def show_email(gmid):

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
+<a href='{{ url_for("refresh_meta") }}'><button> Refresh meta </button> </a>
+<hr>
 <table>
   <thead>
     <tr>
@@ -14,7 +16,7 @@
     <tr>
       <td>{{ eml.stamp }}</td>
       <td><a href="{{ url_for('show_email', gmid=eml.gmid) }}">{{ (eml.subject or '')[:50] }}</a></td>
-      <td>{{ eml.from }}</td>
+      <td>{{ (eml.sender or '')[:50] }}</td>
       <td>{{ eml.labels }}</td>
     </tr>
   {% endfor %}
