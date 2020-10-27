@@ -7,12 +7,57 @@ from collections import namedtuple
 from gmailcopy.config import sqlite3
 
 
+def render_ctypes(ctypes):
+    MAP = {
+        "text/plain": "",
+        "text/csv": "📜",
+        "text/xml": "📜",
+        "text/x-markdown": "📜",
+        "text/x-bibtex": "📜",
+        "text/html": "",
+        "text/x-python": "🐍",
+        # "text/html": "🌐",
+        "multipart/signed": "",
+        "multipart/related": "",
+        "multipart/alternative": "",
+        "multipart/mixed": "",
+        "application/pgp-signature": "",
+        "application/octet-stream": "📚",
+        "application/pdf": "📚",
+        "application/vnd.oasis.opendocument.text": "📚",
+        "application/vnd.ms-excel": "📚",
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation": "📚",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "📚",
+        "application/vnd.oasis.opendocument.spreadsheet": "📚",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "📚",
+        "application/msword": "📚",
+        "application/zip": "🤐",
+        "application/x-gzip": "🤐",
+        "application/rar": "🤐",
+        "application/x-zip-compressed": "🤐",
+        "video/3gpp": "🎭",
+        "video/mp4": "🎭",
+        "video/x-matroska": "🎭",
+        "audio/mp3": "🎶",
+        "audio/mpeg": "🎶",
+        "image/jpeg": "📷",
+        "image/jpg": "📷",
+        "image/gif": "📷",
+        "image/bmp": "📷",
+        "image/png": "📷",
+    }
+    return " ".join(MAP.get(c, c) for c in ctypes.split())
+
+
 @click.command()
 @click.option("--backup_dir", default="backup")
 def run(backup_dir):
     app = Flask(__name__)
     app.jinja_env.globals["url_for"] = url_for
-    Meta = namedtuple("Meta", "gmid subject sender labels stamp")
+    app.jinja_env.globals["render_ctypes"] = render_ctypes
+    Meta = namedtuple(
+        "Meta", "gmid subject sender recipient labels ctypes search stamp"
+    )
 
     meta = {}
 
