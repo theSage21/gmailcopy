@@ -94,16 +94,24 @@ def backup_email(msgid, imap, backup_dir, conn):
 def update_meta(gmid, eml, labels, conn):
     stamp = arrow.get(time.mktime(email.utils.parsedate(eml["Date"])))
     labels = f" {labels} "
+    ctypes = " ".join({part.get_content_type() for part in eml.walk()})
+    search = ""  # future use
     sql = """
-    insert into email values (?, ?, ?, ?, ?)
+    insert into email(gmid, subject, sender,
+                      recipient, labels, ctypes,
+                      search, stamp)
+    values (?, ?, ?, ?, ?, ?, ?, ?)
     on conflict(gmid)
     do update set
         subject=?,
-        labels=?,
         sender=?,
+        recipient=?,
+        labels=?,
+        ctypes=?,
+        search=?,
         stamp=?;
     """
-    args = [gmid, eml["subject"], eml["From"], labels, stamp]
+    args = [gmid, eml["subject"], eml["From"], eml["To"], labels, ctypes, search, stamp]
     args = args + args[1:]
     cursor = conn.cursor()
     cursor.execute(sql, args)
@@ -119,7 +127,10 @@ def ensure_tables(conn):
          gmid text primary key,
          subject text,
          sender text,
+         recipient text,
          labels text,
+         ctypes text,
+         search text,
          stamp timestamp
          )
     """
