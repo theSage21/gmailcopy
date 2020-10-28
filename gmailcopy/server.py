@@ -8,6 +8,22 @@ from collections import namedtuple
 from gmailcopy.config import sqlite3
 
 
+Label = namedtuple("Label", "text value url cancel_url")
+
+
+def label_from_val(lab):
+    txt = lab.strip().replace('"', "").strip().lstrip("\\")
+    qlist = request.args.getlist("q")
+    url = url_for("listing", q=list(sorted(set(qlist + [lab]))))
+    cancel = url_for("listing", q=list(sorted({l for l in qlist if l != lab})))
+    return Label(txt, lab, url, cancel)
+
+
+def build_labels(string):
+    labels = [label_from_val(l) for l in string.split()]
+    return labels
+
+
 def short_time(dt):
     now = arrow.utcnow()
     if now.date == dt.date:
@@ -66,6 +82,8 @@ def run(backup_dir):
     app.jinja_env.globals["url_for"] = url_for
     app.jinja_env.globals["render_ctypes"] = render_ctypes
     app.jinja_env.globals["short_time"] = short_time
+    app.jinja_env.globals["build_labels"] = build_labels
+    app.jinja_env.globals["label_from_val"] = label_from_val
     Meta = namedtuple(
         "Meta", "gmid subject sender recipient labels ctypes search stamp"
     )
@@ -74,7 +92,17 @@ def run(backup_dir):
 
     @app.route("/")
     def listing():
-        return render_template("listing.html", meta=meta)
+        qlist = request.args.getlist("q")
+        listed = {} if qlist else meta
+        if qlist:
+            for k, v in meta.items():
+                for l in build_labels(v.labels):
+                    if l.value in qlist:
+                        listed[k] = v
+                        break
+        return render_template(
+            "listing.html", listed=listed, qlist=qlist, n_listed=len(listed)
+        )
 
     @app.route("/refresh")
     def refresh_meta():

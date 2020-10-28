@@ -2,25 +2,36 @@
 {% block content %}
 <a href='{{ url_for("refresh_meta") }}'><button> Refresh meta </button> </a>
 <hr>
+{{ n_listed }} items.
+{% if qlist %}
+  <b>|</b>
+  {% for val in qlist %}
+    {% set label=label_from_val(val) %}
+    <a href='{{ label.cancel_url }}'>🗑️ {{ label.text }}</a>
+  {% endfor %}
+{% endif %}
+<hr>
 <table>
   <thead>
     <tr>
       <td>Datetime</td>
       <td>Subject</td>
-      <td>From</td>
-      <td>To</td>
-      <td>Labels</td>
+      <td>From-To</td>
     </tr>
   </thead>
   <tbody>
-  {% for eml in meta.values() %}
+  {% for eml in listed.values() %}
     <tr>
       <td>{{ short_time(eml.stamp) }}</td>
-      <td><a href="{{ url_for('show_email', gmid=eml.gmid) }}">{{ (eml.subject or '')[:50] }}</a>{{ render_ctypes(eml.ctypes) }}</td>
-      <td>{{ (eml.sender or '')[:50] }}</td>
-      <td>{{ (eml.recipient or '')[:50] }}</td>
-      <td>{{ eml.labels }}</td>
+      <td><a href="{{ url_for('show_email', gmid=eml.gmid) }}">{{ (eml.subject or '')[:50] }}</a>{{ render_ctypes(eml.ctypes) }}
+        <br>
+        {% for label in build_labels(eml.labels) %}
+        <a href="{{ label.url }}">{{ label.text }}</a>
+        {% endfor %}
+      </td>
+      <td rowspan=2><b>From:</b>{{ (eml.sender or '')[:50] }}<br><b>To:</b>{{ (eml.recipient or '')[:50] }}</td>
     </tr>
+    <tr></tr>
   {% endfor %}
   </tbody>
 </table>
