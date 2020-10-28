@@ -2,9 +2,19 @@ import os
 import io
 import click
 import email
+import arrow
 from flask import Flask, render_template, url_for, request, send_file, redirect
 from collections import namedtuple
 from gmailcopy.config import sqlite3
+
+
+def short_time(dt):
+    now = arrow.utcnow()
+    if now.date == dt.date:
+        return dt.format("HH:mm")
+    if now.month == dt.month:
+        return dt.format("MMM DD")
+    return dt.format("YY MMM")
 
 
 def render_ctypes(ctypes):
@@ -55,6 +65,7 @@ def run(backup_dir):
     app = Flask(__name__)
     app.jinja_env.globals["url_for"] = url_for
     app.jinja_env.globals["render_ctypes"] = render_ctypes
+    app.jinja_env.globals["short_time"] = short_time
     Meta = namedtuple(
         "Meta", "gmid subject sender recipient labels ctypes search stamp"
     )
@@ -74,7 +85,7 @@ def run(backup_dir):
         for row in cursor.execute(
             "select * from email order by datetime(stamp) desc"
         ).fetchall():
-            meta[row[0]] = Meta(*tuple(row))
+            meta[row[0]] = Meta(*tuple(list(row[:-1]) + [arrow.get(row[-1])]))
         conn.commit()
         conn.close()
         return redirect(url_for("listing"))
@@ -104,7 +115,7 @@ def run(backup_dir):
         body = body[0]
         return render_template("email.html", eml=eml, meta=meta, gmid=gmid, body=body)
 
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5001)
 
 
 if __name__ == "__main__":

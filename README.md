@@ -6,7 +6,7 @@ GmailCopy
     - [x] Attachments
     - [x] Gmail labels applied to the emails.
 - [x] Browse through email locally via a small web server.
-- [ ] Search through email locally using text search + labels.
+- [ ] Search local copy using text search + labels.
 
 ## Steps
 

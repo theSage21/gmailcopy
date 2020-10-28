@@ -15,7 +15,7 @@
   <tbody>
   {% for eml in meta.values() %}
     <tr>
-      <td>{{ eml.stamp }}</td>
+      <td>{{ short_time(eml.stamp) }}</td>
       <td><a href="{{ url_for('show_email', gmid=eml.gmid) }}">{{ (eml.subject or '')[:50] }}</a>{{ render_ctypes(eml.ctypes) }}</td>
       <td>{{ (eml.sender or '')[:50] }}</td>
       <td>{{ (eml.recipient or '')[:50] }}</td>
