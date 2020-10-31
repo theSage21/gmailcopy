@@ -89,17 +89,17 @@ def run(backup_dir):
     )
 
     meta = {}
+    revidx = {}
 
     @app.route("/")
     def listing():
         qlist = request.args.getlist("q")
         listed = {} if qlist else meta
         if qlist:
-            for k, v in meta.items():
-                for l in build_labels(v.labels):
-                    if l.value in qlist:
-                        listed[k] = v
-                        break
+            ids = set()
+            for q in qlist:
+                ids |= revidx[q]
+            listed = dict(sorted((k, meta[k]) for k in ids, key=lambda x: x[1].stamp))
         return render_template(
             "listing.html", listed=listed, qlist=qlist, n_listed=len(listed)
         )
@@ -113,7 +113,13 @@ def run(backup_dir):
         for row in cursor.execute(
             "select * from email order by datetime(stamp) desc"
         ).fetchall():
-            meta[row[0]] = Meta(*tuple(list(row[:-1]) + [arrow.get(row[-1])]))
+            gmid = row[0]
+            M = Meta(*tuple(list(row[:-1]) + [arrow.get(row[-1])]))
+            meta[gmid] = M
+            for lab in build_labels(M.labels):
+                if lab.value not in revidx:
+                    revidx[lab.value] = set()
+                revidx[lab.value].add(gmid)
         conn.commit()
         conn.close()
         return redirect(url_for("listing"))
