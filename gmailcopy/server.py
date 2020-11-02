@@ -99,7 +99,11 @@ def run(backup_dir):
             ids = set()
             for q in qlist:
                 ids |= revidx[q]
-            listed = dict(sorted(((k, meta[k]) for k in ids), key=lambda x: x[1].stamp))
+            listed = dict(
+                sorted(
+                    ((k, meta[k]) for k in ids), key=lambda x: x[1].stamp, reverse=True
+                )
+            )
         return render_template(
             "listing.html", listed=listed, qlist=qlist, n_listed=len(listed)
         )
